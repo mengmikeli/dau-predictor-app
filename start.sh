@@ -11,7 +11,7 @@ sleep 2
 
 # Start the frontend server
 echo "Starting frontend server..."
-cd ../dau-predictor-frontend
+cd ../frontend
 npm start &
 FRONTEND_PID=$!
 
