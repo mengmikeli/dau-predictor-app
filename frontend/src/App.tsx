@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Layout, Card, Form, Select, Button, InputNumber, Row, Col, Typography, Space, message, Collapse, Checkbox, Slider, Tabs, Switch, ConfigProvider, theme } from 'antd';
 import { Line } from 'react-chartjs-2';
 import { MoonOutlined, SunOutlined } from '@ant-design/icons';
@@ -103,7 +103,7 @@ function App() {
     return saved ? saved === 'dark' : false;
   });
 
-  const fetchBaselineData = async () => {
+  const fetchBaselineData = useCallback(async () => {
     try {
       // Try to load from localStorage first
       const savedData = loadBaselineFromStorage();
@@ -138,11 +138,11 @@ function App() {
     } catch (error) {
       message.error('Failed to set baseline data');
     }
-  };
+  }, []);
 
   React.useEffect(() => {
     fetchBaselineData();
-  }, []);
+  }, [fetchBaselineData]);
 
   const toggleTheme = () => {
     // Use requestAnimationFrame to ensure smooth transition
@@ -270,23 +270,39 @@ function App() {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top' as const,
         labels: {
           color: isDarkMode ? '#FFFFFF' : '#000000',
+          font: {
+            family: 'JetBrains Mono, Monaco, Menlo, Consolas, monospace',
+            size: 12,
+            weight: 500,
+          }
         }
       },
       title: {
         display: true,
         text: 'DAU Prediction - 12 Month Forecast',
         color: isDarkMode ? '#FFFFFF' : '#000000',
+        font: {
+          family: 'JetBrains Mono, Monaco, Menlo, Consolas, monospace',
+          size: 14,
+          weight: 600,
+        }
       },
     },
     scales: {
       x: {
         ticks: {
           color: isDarkMode ? '#FFFFFF' : '#000000',
+          font: {
+            family: 'JetBrains Mono, Monaco, Menlo, Consolas, monospace',
+            size: 11,
+            weight: 400,
+          }
         },
         grid: {
           color: isDarkMode ? '#333333' : '#E5E5E5',
@@ -296,6 +312,11 @@ function App() {
         beginAtZero: false,
         ticks: {
           color: isDarkMode ? '#FFFFFF' : '#000000',
+          font: {
+            family: 'JetBrains Mono, Monaco, Menlo, Consolas, monospace',
+            size: 11,
+            weight: 400,
+          },
           callback: function(value: any) {
             return (value / 1000000).toFixed(1) + 'M';
           }
@@ -542,7 +563,9 @@ function App() {
             {result && (
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Card title="Prediction Results">
-                  <Line data={chartData!} options={chartOptions} />
+                  <div style={{ height: '300px' }}>
+                    <Line data={chartData!} options={chartOptions} />
+                  </div>
                 </Card>
 
                 <Card title="Summary Metrics">
