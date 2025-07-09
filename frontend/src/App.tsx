@@ -394,7 +394,7 @@ function App() {
         <Tabs defaultActiveKey="1">
           <TabPane tab="DAU Prediction" key="1">
             <Row gutter={24}>
-              <Col span={12}>
+              <Col xs={24} lg={12}>
                 <Card title="Growth Initiative Parameters">
               <Form
                 form={form}
@@ -468,36 +468,36 @@ function App() {
                               <InputNumber style={{ width: '100%' }} min={0} />
                             </Form.Item>
                             <Row gutter={16}>
-                              <Col span={12}>
+                              <Col xs={24} sm={12}>
                                 <Form.Item name="d1Gain" label="D1 Retention Gain (%)">
                                   <InputNumber style={{ width: '100%' }} min={0} step={0.1} />
                                 </Form.Item>
                               </Col>
-                              <Col span={12}>
+                              <Col xs={24} sm={12}>
                                 <Form.Item name="d7Gain" label="D7 Retention Gain (%)">
                                   <InputNumber style={{ width: '100%' }} min={0} step={0.1} />
                                 </Form.Item>
                               </Col>
                             </Row>
                             <Row gutter={16}>
-                              <Col span={12}>
+                              <Col xs={24} sm={12}>
                                 <Form.Item name="d14Gain" label="D14 Retention Gain (%)">
                                   <InputNumber style={{ width: '100%' }} min={0} step={0.1} />
                                 </Form.Item>
                               </Col>
-                              <Col span={12}>
+                              <Col xs={24} sm={12}>
                                 <Form.Item name="d28Gain" label="D28 Retention Gain (%)">
                                   <InputNumber style={{ width: '100%' }} min={0} step={0.1} />
                                 </Form.Item>
                               </Col>
                             </Row>
                             <Row gutter={16}>
-                              <Col span={12}>
+                              <Col xs={24} sm={12}>
                                 <Form.Item name="d360Gain" label="D360 Retention Gain (%)">
                                   <InputNumber style={{ width: '100%' }} min={0} step={0.1} placeholder="Optional" />
                                 </Form.Item>
                               </Col>
-                              <Col span={12}>
+                              <Col xs={24} sm={12}>
                                 <Form.Item name="d720Gain" label="D720 Retention Gain (%)">
                                   <InputNumber style={{ width: '100%' }} min={0} step={0.1} placeholder="Optional" />
                                 </Form.Item>
@@ -514,7 +514,7 @@ function App() {
                   <Panel header="Advanced Settings" key="1">
                     <Card size="small" title="Targeting" style={{ marginBottom: 16 }}>
                       <Row gutter={16}>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item label="User Segments">
                             <Form.Item name="commercial" valuePropName="checked" noStyle>
                               <Checkbox>Commercial</Checkbox>
@@ -525,7 +525,7 @@ function App() {
                             </Form.Item>
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item label="Platforms">
                             <Form.Item name="ios" valuePropName="checked" noStyle>
                               <Checkbox>iOS</Checkbox>
@@ -559,7 +559,7 @@ function App() {
             </Card>
           </Col>
 
-          <Col span={12}>
+          <Col xs={24} lg={12}>
             {result && (
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Card title="Prediction Results">
@@ -570,21 +570,21 @@ function App() {
 
                 <Card title="Summary Metrics">
                   <Row gutter={16}>
-                    <Col span={12}>
+                    <Col xs={24} sm={12}>
                       <Text strong>Total 12-Month Impact:</Text>
                       <div className="technical-number">{(result.summary.totalImpact / 1000000).toFixed(2)}M DAU-days</div>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} sm={12}>
                       <Text strong>Peak Impact:</Text>
                       <div className="technical-number">{(result.summary.peakImpact / 1000000).toFixed(2)}M DAU</div>
                     </Col>
                   </Row>
                   <Row gutter={16} style={{ marginTop: 16 }}>
-                    <Col span={12}>
+                    <Col xs={24} sm={12}>
                       <Text strong>Peak Month:</Text>
                       <div className="technical-number">Month {result.summary.peakMonth}</div>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} sm={12}>
                       <Text strong>Peak Lift:</Text>
                       <div className="technical-number">{result.summary.peakLiftPercent.toFixed(1)}%</div>
                     </Col>
@@ -595,15 +595,15 @@ function App() {
                         <Text strong>Impact Breakdown:</Text>
                       </div>
                       <Row gutter={16}>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Text type="secondary">Existing Users:</Text>
                           <div className="technical-number">{(result.summary.breakdown.existingUsers / 1000000).toFixed(2)}M</div>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Text type="secondary">New Users:</Text>
                           <div className="technical-number">{(result.summary.breakdown.newUsers / 1000000).toFixed(2)}M</div>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Text type="secondary">New Acquisition:</Text>
                           <div className="technical-number">{(result.summary.breakdown.newAcquisition / 1000000).toFixed(2)}M</div>
                         </Col>
@@ -616,11 +616,11 @@ function App() {
                         <Text strong>Model Quality (R²):</Text>
                       </div>
                       <Row gutter={16}>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Text type="secondary">New Users:</Text>
                           <div>{result.retentionCurves.baseNewUser.rSquared?.toFixed(3) || 'N/A'}</div>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Text type="secondary">Existing Users:</Text>
                           <div>{result.retentionCurves.baseExistingUser.rSquared?.toFixed(3) || 'N/A'}</div>
                         </Col>
@@ -652,33 +652,33 @@ function App() {
 
             {!editingBaseline && baselineData && (
               <Row gutter={24}>
-                <Col span={12}>
+                <Col xs={24} lg={12}>
                   <Card title="Current DAU by Segment/Platform">
                     <Row gutter={16}>
                       {Object.entries(baselineData.currentDAU).map(([key, value]) => (
-                        <Col span={12} key={key}>
+                        <Col xs={12} sm={12} key={key}>
                           <Text strong>{key.replace('_', ' ').toUpperCase()}:</Text>
                           <div>{(value as number / 1000000).toFixed(2)}M</div>
                         </Col>
                       ))}
                     </Row>
-                    <div style={{ marginTop: 16, padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                    <div style={{ marginTop: 16, padding: '8px', backgroundColor: isDarkMode ? '#262626' : '#f5f5f5', borderRadius: '4px' }}>
                       <Text strong>Total Current DAU: {(baselineData.totalCurrentDAU / 1000000).toFixed(2)}M</Text>
                     </div>
                   </Card>
                 </Col>
                 
-                <Col span={12}>
+                <Col xs={24} lg={12}>
                   <Card title="Weekly Acquisitions by Segment/Platform">
                     <Row gutter={16}>
                       {Object.entries(baselineData.weeklyAcquisitions).map(([key, value]) => (
-                        <Col span={12} key={key}>
+                        <Col xs={12} sm={12} key={key}>
                           <Text strong>{key.replace('_', ' ').toUpperCase()}:</Text>
                           <div>{(value as number / 1000).toFixed(0)}K/week</div>
                         </Col>
                       ))}
                     </Row>
-                    <div style={{ marginTop: 16, padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                    <div style={{ marginTop: 16, padding: '8px', backgroundColor: isDarkMode ? '#262626' : '#f5f5f5', borderRadius: '4px' }}>
                       <Text strong>Total Weekly: {(baselineData.totalWeeklyAcquisitions / 1000).toFixed(0)}K</Text>
                       <br />
                       <Text strong>Daily: {(baselineData.dailyAcquisitions / 1000).toFixed(0)}K</Text>
@@ -695,25 +695,25 @@ function App() {
                 onFinish={handleSaveBaseline}
               >
                 <Row gutter={24}>
-                  <Col span={12}>
+                  <Col xs={24} lg={12}>
                     <Card title="Current DAU by Segment/Platform">
                       <Row gutter={16}>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['currentDAU', 'commercial_ios']} label="Commercial iOS">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['currentDAU', 'commercial_android']} label="Commercial Android">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['currentDAU', 'consumer_ios']} label="Consumer iOS">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['currentDAU', 'consumer_android']} label="Consumer Android">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
@@ -722,25 +722,25 @@ function App() {
                     </Card>
                   </Col>
                   
-                  <Col span={12}>
+                  <Col xs={24} lg={12}>
                     <Card title="Weekly Acquisitions by Segment/Platform">
                       <Row gutter={16}>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['weeklyAcquisitions', 'commercial_ios']} label="Commercial iOS">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['weeklyAcquisitions', 'commercial_android']} label="Commercial Android">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['weeklyAcquisitions', 'consumer_ios']} label="Consumer iOS">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name={['weeklyAcquisitions', 'consumer_android']} label="Consumer Android">
                             <InputNumber style={{ width: '100%' }} min={0} />
                           </Form.Item>
@@ -751,35 +751,35 @@ function App() {
                 </Row>
                 
                 <Row gutter={24} style={{ marginTop: 24 }}>
-                  <Col span={12}>
+                  <Col xs={24} lg={12}>
                     <Card title="Retention Curves - New Users (%)">
                       <Row gutter={16}>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'new', 'd1']} label="D1">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'new', 'd7']} label="D7">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'new', 'd14']} label="D14">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'new', 'd28']} label="D28">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'new', 'd360']} label="D360">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'new', 'd720']} label="D720">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
@@ -788,35 +788,35 @@ function App() {
                     </Card>
                   </Col>
                   
-                  <Col span={12}>
+                  <Col xs={24} lg={12}>
                     <Card title="Retention Curves - Existing Users (%)">
                       <Row gutter={16}>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'existing', 'd1']} label="D1">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'existing', 'd7']} label="D7">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'existing', 'd14']} label="D14">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'existing', 'd28']} label="D28">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'existing', 'd360']} label="D360">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col xs={24} sm={8}>
                           <Form.Item name={['retentionCurves', 'existing', 'd720']} label="D720">
                             <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.1} />
                           </Form.Item>
@@ -836,11 +836,11 @@ function App() {
             
             {baselineData && (
               <Row gutter={24} style={{ marginTop: 24 }}>
-                <Col span={12}>
+                <Col xs={24} lg={12}>
                   <Card title="Baseline Retention Curves - New Users">
                     <Row gutter={16}>
                       {Object.entries(baselineData.retentionCurves.new).map(([day, value]) => (
-                        <Col span={8} key={day}>
+                        <Col xs={12} sm={8} md={4} key={day}>
                           <div>
                             <Text strong>{day.toUpperCase()}:</Text>
                             <div>{value as number}%</div>
@@ -851,11 +851,11 @@ function App() {
                   </Card>
                 </Col>
                 
-                <Col span={12}>
+                <Col xs={24} lg={12}>
                   <Card title="Baseline Retention Curves - Existing Users">
                     <Row gutter={16}>
                       {Object.entries(baselineData.retentionCurves.existing).map(([day, value]) => (
-                        <Col span={8} key={day}>
+                        <Col xs={12} sm={8} md={4} key={day}>
                           <div>
                             <Text strong>{day.toUpperCase()}:</Text>
                             <div>{value as number}%</div>
@@ -870,18 +870,18 @@ function App() {
             
             {baselineData && (
               <Row gutter={24} style={{ marginTop: 24 }}>
-                <Col span={24}>
+                <Col xs={24}>
                   <Card title="Key Assumptions">
                     <Row gutter={16}>
-                      <Col span={8}>
+                      <Col xs={24} sm={8}>
                         <Text strong>Daily Churn Rate:</Text>
                         <div>0.17% (5% monthly)</div>
                       </Col>
-                      <Col span={8}>
+                      <Col xs={24} sm={8}>
                         <Text strong>New User Model:</Text>
                         <div>Power Curve: retention(t) = a × t^(-b)</div>
                       </Col>
-                      <Col span={8}>
+                      <Col xs={24} sm={8}>
                         <Text strong>Existing User Model:</Text>
                         <div>Exponential: retention(t) = c + a × e^(-λt)</div>
                       </Col>

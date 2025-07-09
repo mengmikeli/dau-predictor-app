@@ -308,7 +308,7 @@ h6 {
   opacity: 0.8;
 }
 
-/* Responsive logo sizing */
+/* Responsive mobile styles */
 @media (max-width: 768px) {
   .app-logo {
     height: 36px;
@@ -318,6 +318,92 @@ h6 {
   .header-logo-container {
     gap: 8px;
   }
+  
+  /* Add spacing between stacked cards on mobile */
+  .ant-col-xs-24 {
+    margin-bottom: 16px;
+  }
+  
+  /* Adjust card padding on mobile */
+  .ant-card-body {
+    padding: 16px !important;
+  }
+  
+  /* Improve form layout on mobile */
+  .ant-form-item {
+    margin-bottom: 16px !important;
+  }
+  
+  /* Reduce gutter on mobile */
+  .ant-row {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+  }
+  
+  .ant-row > .ant-col {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Adjust content padding on mobile */
+  .ant-layout-content {
+    padding: 12px !important;
+  }
+  
+  /* Stack buttons on mobile */
+  .ant-space-horizontal {
+    flex-wrap: wrap;
+  }
+  
+  /* Full width buttons on mobile */
+  .ant-btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+/* Consistent panel spacing for all screen sizes when stacked */
+.ant-row > .ant-col-xs-24,
+.ant-row > .ant-col-sm-24,
+.ant-row > .ant-col-md-24,
+.ant-row > .ant-col-lg-24,
+.ant-row > .ant-col-xl-24 {
+  margin-bottom: 24px;
+}
+
+/* Remove bottom margin from the last stacked panel */
+.ant-row > .ant-col-xs-24:last-child,
+.ant-row > .ant-col-sm-24:last-child,
+.ant-row > .ant-col-md-24:last-child,
+.ant-row > .ant-col-lg-24:last-child,
+.ant-row > .ant-col-xl-24:last-child {
+  margin-bottom: 0;
+}
+
+/* Override for nested rows to prevent double spacing */
+.ant-col .ant-row > .ant-col-xs-24,
+.ant-col .ant-row > .ant-col-sm-24,
+.ant-col .ant-row > .ant-col-md-24,
+.ant-col .ant-row > .ant-col-lg-24,
+.ant-col .ant-row > .ant-col-xl-24 {
+  margin-bottom: 16px;
+}
+
+.ant-col .ant-row > .ant-col-xs-24:last-child,
+.ant-col .ant-row > .ant-col-sm-24:last-child,
+.ant-col .ant-row > .ant-col-md-24:last-child,
+.ant-col .ant-row > .ant-col-lg-24:last-child,
+.ant-col .ant-row > .ant-col-xl-24:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure consistent spacing for Space component items */
+.ant-space-vertical > .ant-space-item {
+  margin-bottom: 16px !important;
+}
+
+.ant-space-vertical > .ant-space-item:last-child {
+  margin-bottom: 0 !important;
 }
 
 /* Smooth transitions - more specific targeting to avoid jitter */
