@@ -655,11 +655,11 @@ function App() {
                       <Row gutter={16}>
                         <Col xs={24} sm={12}>
                           <Text type="secondary">New Users:</Text>
-                          <div>{result.retentionCurves.baseNewUser.rSquared?.toFixed(3) || 'N/A'}</div>
+                          <div className="technical-number">{result.retentionCurves.baseNewUser.rSquared?.toFixed(3) || 'N/A'}</div>
                         </Col>
                         <Col xs={24} sm={12}>
                           <Text type="secondary">Existing Users:</Text>
-                          <div>{result.retentionCurves.baseExistingUser.rSquared?.toFixed(3) || 'N/A'}</div>
+                          <div className="technical-number">{result.retentionCurves.baseExistingUser.rSquared?.toFixed(3) || 'N/A'}</div>
                         </Col>
                       </Row>
                     </>
@@ -694,13 +694,14 @@ function App() {
                     <Row gutter={16}>
                       {Object.entries(baselineData.currentDAU).map(([key, value]) => (
                         <Col xs={12} sm={12} key={key}>
-                          <Text strong>{key.replace('_', ' ').toUpperCase()}:</Text>
-                          <div>{(value as number / 1000000).toFixed(2)}M</div>
+                          <Text type="secondary">{key.replace('_', ' ').toUpperCase()}:</Text>
+                          <div className="technical-number">{(value as number / 1000000).toFixed(2)}M</div>
                         </Col>
                       ))}
                     </Row>
                     <div style={{ marginTop: 16, padding: '8px', backgroundColor: isDarkMode ? '#262626' : '#f5f5f5', borderRadius: '4px' }}>
-                      <Text strong>Total Current DAU: {(baselineData.totalCurrentDAU / 1000000).toFixed(2)}M</Text>
+                      <Text strong>Total Current DAU: </Text>
+                      <span className="technical-number">{(baselineData.totalCurrentDAU / 1000000).toFixed(2)}M</span>
                     </div>
                   </Card>
                 </Col>
@@ -710,15 +711,17 @@ function App() {
                     <Row gutter={16}>
                       {Object.entries(baselineData.weeklyAcquisitions).map(([key, value]) => (
                         <Col xs={12} sm={12} key={key}>
-                          <Text strong>{key.replace('_', ' ').toUpperCase()}:</Text>
-                          <div>{(value as number / 1000).toFixed(0)}K/week</div>
+                          <Text type="secondary">{key.replace('_', ' ').toUpperCase()}:</Text>
+                          <div className="technical-number">{(value as number / 1000).toFixed(0)}K/week</div>
                         </Col>
                       ))}
                     </Row>
                     <div style={{ marginTop: 16, padding: '8px', backgroundColor: isDarkMode ? '#262626' : '#f5f5f5', borderRadius: '4px' }}>
-                      <Text strong>Total Weekly: {(baselineData.totalWeeklyAcquisitions / 1000).toFixed(0)}K</Text>
+                      <Text strong>Total Weekly: </Text>
+                      <span className="technical-number">{(baselineData.totalWeeklyAcquisitions / 1000).toFixed(0)}K</span>
                       <br />
-                      <Text strong>Daily: {(baselineData.dailyAcquisitions / 1000).toFixed(0)}K</Text>
+                      <Text strong>Daily: </Text>
+                      <span className="technical-number">{(baselineData.dailyAcquisitions / 1000).toFixed(0)}K</span>
                     </div>
                   </Card>
                 </Col>
@@ -879,8 +882,8 @@ function App() {
                       {Object.entries(baselineData.retentionCurves.new).map(([day, value]) => (
                         <Col xs={12} sm={8} md={4} key={day}>
                           <div>
-                            <Text strong>{day.toUpperCase()}:</Text>
-                            <div>{value as number}%</div>
+                            <Text type="secondary">{day.toUpperCase()}:</Text>
+                            <div className="technical-number">{value as number}%</div>
                           </div>
                         </Col>
                       ))}
@@ -894,8 +897,8 @@ function App() {
                       {Object.entries(baselineData.retentionCurves.existing).map(([day, value]) => (
                         <Col xs={12} sm={8} md={4} key={day}>
                           <div>
-                            <Text strong>{day.toUpperCase()}:</Text>
-                            <div>{value as number}%</div>
+                            <Text type="secondary">{day.toUpperCase()}:</Text>
+                            <div className="technical-number">{value as number}%</div>
                           </div>
                         </Col>
                       ))}
@@ -911,16 +914,16 @@ function App() {
                   <Card title="Key Assumptions">
                     <Row gutter={16}>
                       <Col xs={24} sm={8}>
-                        <Text strong>Daily Churn Rate:</Text>
-                        <div>0.17% (5% monthly)</div>
+                        <Text type="secondary">Daily Churn Rate:</Text>
+                        <div className="technical-number">0.17% (5% monthly)</div>
                       </Col>
                       <Col xs={24} sm={8}>
-                        <Text strong>New User Model:</Text>
-                        <div>Power Curve: retention(t) = a × t^(-b)</div>
+                        <Text type="secondary">New User Model:</Text>
+                        <div className="technical-number">Power Curve: retention(t) = a × t^(-b)</div>
                       </Col>
                       <Col xs={24} sm={8}>
-                        <Text strong>Existing User Model:</Text>
-                        <div>Exponential: retention(t) = c + a × e^(-λt)</div>
+                        <Text type="secondary">Existing User Model:</Text>
+                        <div className="technical-number">Exponential: retention(t) = c + a × e^(-λt)</div>
                       </Col>
                     </Row>
                   </Card>
