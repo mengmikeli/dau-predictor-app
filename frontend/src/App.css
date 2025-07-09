@@ -280,6 +280,27 @@ h6 {
   font-variant-numeric: tabular-nums slashed-zero !important;
   letter-spacing: 0.02em !important;
   font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+/* Target Text type="secondary" components specifically */
+span.ant-typography[style*="rgba(0, 0, 0, 0.45)"],
+span.ant-typography[style*="rgba(255, 255, 255, 0.45)"] {
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+/* Alternative selector for secondary text */
+.ant-typography.ant-typography-caption,
+span.ant-typography[class*="secondary"] {
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
 }
 
 /* Headers with monospace styling */
