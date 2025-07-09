@@ -103,6 +103,15 @@
   background-color: inherit;
   border-radius: 8px;
   padding: 16px;
+  min-height: 300px;
+  box-sizing: border-box;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
 }
 
 /* Button styling */
@@ -526,14 +535,11 @@ canvas {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  max-width: 100% !important;
-  height: auto !important;
+  image-rendering: auto;
 }
 
 /* Force hardware acceleration on iOS */
-.chartjs-render-monitor {
+.chart-container {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
@@ -543,18 +549,9 @@ canvas {
 /* iOS specific chart container fixes */
 @supports (-webkit-touch-callout: none) {
   /* iOS only styles */
-  div[style*="height: 300px"] {
+  .chart-container {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
-  }
-  
-  canvas {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100% !important;
-    height: 100% !important;
+    will-change: transform;
   }
 }

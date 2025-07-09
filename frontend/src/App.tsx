@@ -144,6 +144,16 @@ function App() {
     fetchBaselineData();
   }, [fetchBaselineData]);
 
+  React.useEffect(() => {
+    if (result && typeof window !== 'undefined') {
+      // Force chart redraw on mobile devices
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
+
   const toggleTheme = () => {
     // Use requestAnimationFrame to ensure smooth transition
     requestAnimationFrame(() => {
@@ -271,9 +281,13 @@ function App() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    devicePixelRatio: window.devicePixelRatio || 1,
     interaction: {
       mode: 'index' as const,
       intersect: false,
+    },
+    animation: {
+      duration: 0
     },
     plugins: {
       legend: {
@@ -567,18 +581,27 @@ function App() {
             {result && (
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Card title="Prediction Results">
-                  <div style={{ 
-                    height: '300px', 
-                    position: 'relative',
-                    width: '100%',
-                    WebkitOverflowScrolling: 'touch',
-                    WebkitTransform: 'translateZ(0)'
-                  }}>
-                    <Line 
-                      data={chartData!} 
-                      options={chartOptions}
-                      style={{ maxWidth: '100%', maxHeight: '100%' }}
-                    />
+                  <div 
+                    className="chart-container"
+                    style={{ 
+                      height: '300px', 
+                      position: 'relative',
+                      width: '100%',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {chartData && (
+                      <Line 
+                        key={`chart-${Date.now()}`}
+                        data={chartData} 
+                        options={chartOptions}
+                        width={undefined}
+                        height={undefined}
+                      />
+                    )}
                   </div>
                 </Card>
 
