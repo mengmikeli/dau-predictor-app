@@ -270,8 +270,8 @@ function App() {
       {
         label: 'Baseline + Initiative Impact',
         data: getMonthlyData(result.withInitiative),
-        borderColor: isDarkMode ? '#FFFFFF' : '#000000',
-        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        borderColor: isDarkMode ? '#52C41A' : '#389E0D',
+        backgroundColor: isDarkMode ? 'rgba(82, 196, 26, 0.1)' : 'rgba(56, 158, 13, 0.1)',
         tension: 0.1,
         borderWidth: 2,
       },
@@ -422,6 +422,9 @@ function App() {
                   initiativeType: 'acquisition',
                   targetUsers: 'new',
                   baselineDecay: 0.01,
+                  weeklyInstalls: 0,
+                  weeksToStart: 0,
+                  duration: 1,
                   d1Gain: 0,
                   d7Gain: 0,
                   d14Gain: 0,
@@ -598,6 +601,53 @@ function App() {
                         key={`chart-${Date.now()}`}
                         data={chartData} 
                         options={chartOptions}
+                        width={undefined}
+                        height={undefined}
+                      />
+                    )}
+                  </div>
+                </Card>
+
+                <Card title="DAU Impact (Delta)">
+                  <div 
+                    className="chart-container"
+                    style={{ 
+                      height: '300px', 
+                      position: 'relative',
+                      width: '100%',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {chartData && result?.incrementalDAU && (
+                      <Line 
+                        key={`delta-chart-${Date.now()}`}
+                        data={{
+                          labels: Array.from({ length: 12 }, (_, i) => `Month ${i + 1}`),
+                          datasets: [
+                            {
+                              label: 'DAU Impact',
+                              data: getMonthlyData(result.incrementalDAU),
+                              borderColor: isDarkMode ? '#52C41A' : '#389E0D',
+                              backgroundColor: isDarkMode ? 'rgba(82, 196, 26, 0.1)' : 'rgba(56, 158, 13, 0.1)',
+                              tension: 0.1,
+                              borderWidth: 2,
+                              fill: true,
+                            }
+                          ]
+                        }}
+                        options={{
+                          ...chartOptions,
+                          plugins: {
+                            ...chartOptions.plugins,
+                            title: {
+                              ...chartOptions.plugins.title,
+                              text: 'Incremental DAU Impact - 12 Month Forecast'
+                            }
+                          }
+                        }}
                         width={undefined}
                         height={undefined}
                       />

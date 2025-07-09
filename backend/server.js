@@ -301,15 +301,22 @@ function calculateDAUimpact(params) {
       const campaignStartDay = acquisition.weeksToStart * 7;
       const campaignEndDay = campaignStartDay + (acquisition.duration * 7);
       
-      // Simple campaign: full volume for the entire duration
-      if (day >= campaignStartDay && day < campaignEndDay) {
-        const dailyNewAcq = acquisition.weeklyInstalls / 7;
-        
-        // Calculate DAU from all campaign cohorts acquired up to this day
-        for (let cohortDay = campaignStartDay; cohortDay <= Math.min(day, campaignEndDay - 1); cohortDay++) {
-          const cohortAge = day - cohortDay;
-          const retention = getRetentionAtDay(baseNewUserCurve, cohortAge);
-          newAcquisitionDAU += dailyNewAcq * retention;
+      // Validate acquisition parameters
+      if (acquisition.weeklyInstalls > 0 && acquisition.duration > 0) {
+        // Calculate DAU from acquisition campaign cohorts
+        if (day >= campaignStartDay) {
+          const dailyNewAcq = acquisition.weeklyInstalls / 7;
+          
+          // Calculate DAU from all campaign cohorts acquired up to this day
+          // During campaign: acquire users daily until campaign ends
+          // After campaign: continue calculating DAU from previously acquired cohorts
+          const lastAcquisitionDay = Math.min(day, campaignEndDay - 1);
+          
+          for (let cohortDay = campaignStartDay; cohortDay <= lastAcquisitionDay; cohortDay++) {
+            const cohortAge = day - cohortDay;
+            const retention = getRetentionAtDay(baseNewUserCurve, cohortAge);
+            newAcquisitionDAU += dailyNewAcq * retention;
+          }
         }
       }
     }
@@ -346,13 +353,107 @@ function calculateDAUimpact(params) {
 
 app.post('/api/predict', (req, res) => {
   try {
+    console.log('=== PREDICTION REQUEST RECEIVED ===');
+    console.log('Full request body:', JSON.stringify(req.body, null, 2));
+    console.log('Initiative Type:', req.body.initiativeType);
+    console.log('Acquisition Params:', JSON.stringify(req.body.acquisition, null, 2));
+    console.log('Validation Check: weeklyInstalls > 0?', req.body.acquisition.weeklyInstalls > 0);
+    console.log('Validation Check: duration > 0?', req.body.acquisition.duration > 0);
+    console.log('Will process acquisition?', req.body.acquisition.weeklyInstalls > 0 && req.body.acquisition.duration > 0);
+    
     const results = calculateDAUimpact(req.body);
+    
+    console.log('=== PREDICTION RESULTS ===');
+    console.log('Peak Impact:', results.summary.peakImpact);
+    console.log('Total Impact:', results.summary.totalImpact);
+    console.log('New Acquisition Breakdown:', results.summary.breakdown.newAcquisition);
+    console.log('========================');
+    
     res.json(results);
   } catch (error) {
+    console.error('Prediction Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// Basic test cases for acquisition debugging
+function runAcquisitionTests() {
+  console.log('\n=== RUNNING ACQUISITION DEBUG TESTS ===\n');
+  
+  // Test 1: Simple acquisition campaign
+  const testCase1 = {
+    initiativeType: 'acquisition',
+    acquisition: {
+      weeklyInstalls: 70000, // 10K daily
+      weeksToStart: 0, // Start immediately
+      duration: 4 // 4 weeks
+    },
+    retention: {
+      targetUsers: 'new',
+      monthsToStart: 0,
+      d1Gain: 0,
+      d7Gain: 0,
+      d14Gain: 0,
+      d28Gain: 0,
+      d360Gain: 0,
+      d720Gain: 0
+    },
+    baselineDecay: 0.0017,
+    segments: { commercial: true, consumer: true },
+    platforms: { ios: true, android: true },
+    exposureRate: 100,
+    customBaseline: null
+  };
+  
+  console.log('TEST 1: Basic Acquisition Campaign');
+  console.log('Parameters:', JSON.stringify(testCase1.acquisition, null, 2));
+  
+  try {
+    const result1 = calculateDAUimpact(testCase1);
+    console.log('Peak Impact:', result1.summary.peakImpact);
+    console.log('Total Impact:', result1.summary.totalImpact);
+    console.log('New Acquisition Impact:', result1.summary.breakdown.newAcquisition);
+    console.log('Sample DAU values (first 10 days):');
+    for (let i = 0; i < 10; i++) {
+      console.log(`  Day ${i}: Baseline=${result1.baseline[i]}, WithInitiative=${result1.withInitiative[i]}, Incremental=${result1.incrementalDAU[i]}`);
+    }
+  } catch (error) {
+    console.error('TEST 1 FAILED:', error.message);
+  }
+  
+  console.log('\n--- Test 2: Check Retention Curves ---');
+  
+  // Test retention function directly
+  const baseNewUserCurve = fitPowerCurve(BASELINE_DATA.retentionCurves.new);
+  console.log('Base New User Curve:', baseNewUserCurve);
+  
+  console.log('Retention at different days:');
+  for (let day of [0, 1, 7, 14, 28, 60]) {
+    const retention = getRetentionAtDay(baseNewUserCurve, day);
+    console.log(`  Day ${day}: ${(retention * 100).toFixed(2)}%`);
+  }
+  
+  console.log('\n--- Test 3: Manual Calculation ---');
+  
+  // Manual calculation for day 1 of campaign
+  const dailyAcq = 70000 / 7; // 10K daily
+  const day0Retention = getRetentionAtDay(baseNewUserCurve, 0); // Should be 1.0
+  const day1Retention = getRetentionAtDay(baseNewUserCurve, 1); // Should be ~0.264
+  
+  console.log('Daily acquisition:', dailyAcq);
+  console.log('Day 0 retention:', day0Retention);
+  console.log('Day 1 retention:', day1Retention);
+  console.log('Expected Day 0 DAU:', dailyAcq * day0Retention);
+  console.log('Expected Day 1 DAU from D0 cohort:', dailyAcq * day1Retention);
+  
+  console.log('\n=== END ACQUISITION TESTS ===\n');
+}
+
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
+  
+  // Run tests after server starts
+  setTimeout(() => {
+    runAcquisitionTests();
+  }, 100);
 });
