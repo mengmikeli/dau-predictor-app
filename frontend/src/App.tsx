@@ -271,6 +271,10 @@ function App() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
+    },
     plugins: {
       legend: {
         position: 'top' as const,
@@ -563,8 +567,18 @@ function App() {
             {result && (
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Card title="Prediction Results">
-                  <div style={{ height: '300px' }}>
-                    <Line data={chartData!} options={chartOptions} />
+                  <div style={{ 
+                    height: '300px', 
+                    position: 'relative',
+                    width: '100%',
+                    WebkitOverflowScrolling: 'touch',
+                    WebkitTransform: 'translateZ(0)'
+                  }}>
+                    <Line 
+                      data={chartData!} 
+                      options={chartOptions}
+                      style={{ maxWidth: '100%', maxHeight: '100%' }}
+                    />
                   </div>
                 </Card>
 

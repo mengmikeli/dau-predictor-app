@@ -360,6 +360,12 @@ h6 {
     width: 100%;
     margin-bottom: 8px;
   }
+  
+  /* Adjust chart height on mobile */
+  div[style*="height: 300px"] {
+    height: 250px !important;
+    min-height: 250px;
+  }
 }
 
 /* Consistent panel spacing for all screen sizes when stacked */
@@ -512,4 +518,43 @@ p {
 /* Ensure all text elements use JetBrains Mono */
 * {
   font-family: 'JetBrains Mono', 'Monaco', 'Menlo', 'Consolas', monospace !important;
+}
+
+/* iOS Safari Chart.js canvas fixes */
+canvas {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Force hardware acceleration on iOS */
+.chartjs-render-monitor {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* iOS specific chart container fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS only styles */
+  div[style*="height: 300px"] {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  
+  canvas {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
 }
