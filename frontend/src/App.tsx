@@ -246,7 +246,7 @@ function App() {
         console.error('Invalid response structure:', response.data);
         message.error('Invalid response from server');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('API Error:', error);
       message.error(`Failed to calculate prediction: ${error.response?.data?.error || error.message}`);
     } finally {
