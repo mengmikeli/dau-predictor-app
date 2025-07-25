@@ -238,9 +238,17 @@ function App() {
       console.log('Sending params:', params);
       const response = await axios.post('/api/predict', params);
       console.log('Received response:', response.data);
-      setResult(response.data);
+      
+      // Validate response structure
+      if (response.data && response.data.summary) {
+        setResult(response.data);
+      } else {
+        console.error('Invalid response structure:', response.data);
+        message.error('Invalid response from server');
+      }
     } catch (error) {
-      message.error('Failed to calculate prediction');
+      console.error('API Error:', error);
+      message.error(`Failed to calculate prediction: ${error.response?.data?.error || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -682,7 +690,7 @@ function App() {
                 </Card>
 
                 <Card title="Summary Metrics">
-                  {result ? (
+                  {result && result.summary ? (
                     <>
                       <Row gutter={16}>
                         <Col xs={24} sm={12}>

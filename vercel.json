@@ -9,8 +9,8 @@
   },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "source": "/api/predict",
+      "destination": "/api/predict.js"
     },
     {
       "source": "/(.*)",
