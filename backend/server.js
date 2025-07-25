@@ -413,9 +413,14 @@ app.post('/api/predict', (req, res) => {
   }
 });
 
-// Serve React app for all other routes
-app.get('*', (req, res) => {
+// Serve React app for root and other routes
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+});
+
+app.get('/static/*', (req, res) => {
+  // Static files are already handled by express.static
+  res.status(404).send('Static file not found');
 });
 
 app.listen(port, () => {
