@@ -586,9 +586,8 @@ function App() {
           </Col>
 
           <Col xs={24} lg={12}>
-            {result && (
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Card title="Prediction Results">
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Card title="Prediction Results">
                   <div 
                     className="chart-container"
                     style={{ 
@@ -601,7 +600,7 @@ function App() {
                       justifyContent: 'center'
                     }}
                   >
-                    {chartData && (
+                    {chartData ? (
                       <Line 
                         key={`chart-${Date.now()}`}
                         data={chartData} 
@@ -609,6 +608,17 @@ function App() {
                         width={undefined}
                         height={undefined}
                       />
+                    ) : (
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        height: '100%',
+                        color: '#999',
+                        fontSize: '16px'
+                      }}>
+                        Click "Calculate DAU Impact" to see prediction charts
+                      </div>
                     )}
                   </div>
                 </Card>
@@ -626,7 +636,7 @@ function App() {
                       justifyContent: 'center'
                     }}
                   >
-                    {chartData && result?.incrementalDAU && (
+                    {chartData && result?.incrementalDAU ? (
                       <Line 
                         key={`delta-chart-${Date.now()}`}
                         data={{
@@ -656,72 +666,97 @@ function App() {
                         width={undefined}
                         height={undefined}
                       />
+                    ) : (
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        height: '100%',
+                        color: '#999',
+                        fontSize: '16px'
+                      }}>
+                        Click "Calculate DAU Impact" to see incremental DAU chart
+                      </div>
                     )}
                   </div>
                 </Card>
 
                 <Card title="Summary Metrics">
-                  <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                      <Text strong>Total 12-Month Impact:</Text>
-                      <div className="technical-number">{(result.summary.totalImpact / 1000000).toFixed(2)}M DAU-days</div>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Text strong>Peak Impact:</Text>
-                      <div className="technical-number">{(result.summary.peakImpact / 1000000).toFixed(2)}M DAU</div>
-                    </Col>
-                  </Row>
-                  <Row gutter={16} style={{ marginTop: 16 }}>
-                    <Col xs={24} sm={12}>
-                      <Text strong>Peak Month:</Text>
-                      <div className="technical-number">Month {result.summary.peakMonth}</div>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Text strong>Peak Lift:</Text>
-                      <div className="technical-number">{result.summary.peakLiftPercent.toFixed(1)}%</div>
-                    </Col>
-                  </Row>
-                  {result.summary.breakdown && (
+                  {result ? (
                     <>
-                      <div style={{ marginTop: 24, marginBottom: 8 }}>
-                        <Text strong>Impact Breakdown:</Text>
-                      </div>
-                      <Row gutter={16}>
-                        <Col xs={24} sm={8}>
-                          <Text type="secondary">Existing Users:</Text>
-                          <div className="technical-number">{(result.summary.breakdown.existingUsers / 1000000).toFixed(2)}M</div>
-                        </Col>
-                        <Col xs={24} sm={8}>
-                          <Text type="secondary">New Users:</Text>
-                          <div className="technical-number">{(result.summary.breakdown.newUsers / 1000000).toFixed(2)}M</div>
-                        </Col>
-                        <Col xs={24} sm={8}>
-                          <Text type="secondary">New Acquisition:</Text>
-                          <div className="technical-number">{(result.summary.breakdown.newAcquisition / 1000000).toFixed(2)}M</div>
-                        </Col>
-                      </Row>
-                    </>
-                  )}
-                  {result.retentionCurves && (
-                    <>
-                      <div style={{ marginTop: 24, marginBottom: 8 }}>
-                        <Text strong>Model Quality (R²):</Text>
-                      </div>
                       <Row gutter={16}>
                         <Col xs={24} sm={12}>
-                          <Text type="secondary">New Users:</Text>
-                          <div className="technical-number">{result.retentionCurves.baseNewUser.rSquared?.toFixed(3) || 'N/A'}</div>
+                          <Text strong>Total 12-Month Impact:</Text>
+                          <div className="technical-number">{(result.summary.totalImpact / 1000000).toFixed(2)}M DAU-days</div>
                         </Col>
                         <Col xs={24} sm={12}>
-                          <Text type="secondary">Existing Users:</Text>
-                          <div className="technical-number">{result.retentionCurves.baseExistingUser.rSquared?.toFixed(3) || 'N/A'}</div>
+                          <Text strong>Peak Impact:</Text>
+                          <div className="technical-number">{(result.summary.peakImpact / 1000000).toFixed(2)}M DAU</div>
                         </Col>
                       </Row>
+                      <Row gutter={16} style={{ marginTop: 16 }}>
+                        <Col xs={24} sm={12}>
+                          <Text strong>Peak Month:</Text>
+                          <div className="technical-number">Month {result.summary.peakMonth}</div>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                          <Text strong>Peak Lift:</Text>
+                          <div className="technical-number">{result.summary.peakLiftPercent.toFixed(1)}%</div>
+                        </Col>
+                      </Row>
+                      {result.summary.breakdown && (
+                        <>
+                          <div style={{ marginTop: 24, marginBottom: 8 }}>
+                            <Text strong>Impact Breakdown:</Text>
+                          </div>
+                          <Row gutter={16}>
+                            <Col xs={24} sm={8}>
+                              <Text type="secondary">Existing Users:</Text>
+                              <div className="technical-number">{(result.summary.breakdown.existingUsers / 1000000).toFixed(2)}M</div>
+                            </Col>
+                            <Col xs={24} sm={8}>
+                              <Text type="secondary">New Users:</Text>
+                              <div className="technical-number">{(result.summary.breakdown.newUsers / 1000000).toFixed(2)}M</div>
+                            </Col>
+                            <Col xs={24} sm={8}>
+                              <Text type="secondary">New Acquisition:</Text>
+                              <div className="technical-number">{(result.summary.breakdown.newAcquisition / 1000000).toFixed(2)}M</div>
+                            </Col>
+                          </Row>
+                        </>
+                      )}
+                      {result.retentionCurves && (
+                        <>
+                          <div style={{ marginTop: 24, marginBottom: 8 }}>
+                            <Text strong>Model Quality (R²):</Text>
+                          </div>
+                          <Row gutter={16}>
+                            <Col xs={24} sm={12}>
+                              <Text type="secondary">New Users:</Text>
+                              <div className="technical-number">{result.retentionCurves.baseNewUser.rSquared?.toFixed(3) || 'N/A'}</div>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                              <Text type="secondary">Existing Users:</Text>
+                              <div className="technical-number">{result.retentionCurves.baseExistingUser.rSquared?.toFixed(3) || 'N/A'}</div>
+                            </Col>
+                          </Row>
+                        </>
+                      )}
                     </>
+                  ) : (
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      height: '150px',
+                      color: '#999',
+                      fontSize: '16px'
+                    }}>
+                      Summary metrics will appear here after calculation
+                    </div>
                   )}
                 </Card>
               </Space>
-            )}
           </Col>
         </Row>
           </TabPane>

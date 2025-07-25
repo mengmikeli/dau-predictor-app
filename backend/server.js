@@ -1,10 +1,14 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Default baseline data with segment/platform granularity
 // Adjusted for realistic growth: 20K daily acquisitions (vs 276K), lower new user retention
@@ -407,6 +411,11 @@ app.post('/api/predict', (req, res) => {
     console.error('Prediction Error:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Serve React app for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 });
 
 app.listen(port, () => {
