@@ -7,6 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // Default baseline data with segment/platform granularity
+// Adjusted for realistic growth: 20K daily acquisitions (vs 276K), lower new user retention
 const BASELINE_DATA = {
   currentDAU: {
     commercial_ios: 3550000,
@@ -15,10 +16,10 @@ const BASELINE_DATA = {
     consumer_android: 8300000
   },
   weeklyAcquisitions: {
-    commercial_ios: 317000,
-    commercial_android: 334000,
-    consumer_ios: 300000,
-    consumer_android: 987000
+    commercial_ios: 22000,    // Reduced from 317000 (93% reduction)
+    commercial_android: 23000, // Reduced from 334000 (93% reduction)
+    consumer_ios: 21000,      // Reduced from 300000 (93% reduction)
+    consumer_android: 74000   // Reduced from 987000 (92% reduction)
   },
   retentionCurves: {
     existing: {
@@ -30,12 +31,12 @@ const BASELINE_DATA = {
       d720: 20
     },
     new: {
-      d1: 26.4,
-      d7: 17.5,
-      d14: 15,
-      d28: 13,
-      d360: 6,
-      d720: 3
+      d1: 22.0,  // Reduced from 26.4 (-4.4pp)
+      d7: 14.0,  // Reduced from 17.5 (-3.5pp)
+      d14: 11.5, // Reduced from 15.0 (-3.5pp)
+      d28: 9.5,  // Reduced from 13.0 (-3.5pp)
+      d360: 4.0, // Reduced from 6.0 (-2.0pp)
+      d720: 2.0  // Reduced from 3.0 (-1.0pp)
     }
   }
 };
@@ -59,8 +60,8 @@ function fitPowerCurve(retentionData) {
   const sumXY = logPoints.reduce((sum, [x, y]) => sum + x * y, 0);
   const sumX2 = logPoints.reduce((sum, [x]) => sum + x * x, 0);
   
-  const b = -(n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const logA = (sumY + b * sumX) / n;
+  const b = Math.abs((n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX));
+  const logA = (sumY + b * sumX) / n; // Note: +b because we want retention = a * t^(-b), regression gives -b
   const a = Math.exp(logA);
   
   // Calculate R-squared
@@ -143,13 +144,21 @@ function getRetentionAtDay(params, day) {
   }
 }
 
+// Calculate cumulative retention for existing users using new decay model
+function getExistingUserRetention(days) {
+  const a = 0.0217;
+  const b = 0.0131;
+  
+  return 1 - a * Math.exp(-b * days);
+}
+
 // Calculate DAU impact with sophisticated modeling
 function calculateDAUimpact(params) {
   const { 
     initiativeType, 
     acquisition, 
     retention, 
-    baselineDecay = 0.0017, // ~5% monthly churn
+    baselineDecay = 0.00959, // 25% monthly churn: 1-(0.75)^(1/30)
     segments = { commercial: true, consumer: true },
     platforms = { ios: true, android: true },
     exposureRate = 100,
@@ -240,8 +249,9 @@ function calculateDAUimpact(params) {
     const day = (month - 1) * 30 + 15;
     
     // === BASELINE DAU ===
-    // A. Existing User Baseline: Initial Existing Users × 0.95^(t/30)
-    const existingUserBaselineDAU = totalCurrentDAU * Math.pow(0.95, day / 30);
+    // A. Existing User Baseline: Daily retention model: 1 - a*exp(-b*t)
+    // Parameters: a=0.0217, b=0.0131, t=days
+    const existingUserBaselineDAU = totalCurrentDAU * getExistingUserRetention(day);
     
     // B. New User Baseline: Σ[c=0 to t] Daily Acquisition × Retention(t - c)
     let newUserBaselineDAU = 0;
@@ -269,8 +279,8 @@ function calculateDAUimpact(params) {
         // A. Existing User Incremental DAU
         // Formula: Launch Cohort Size × (Improved Retention(days since launch) - Base Retention(days since launch))
         if (retention.targetUsers === 'existing' || retention.targetUsers === 'all') {
-          // Launch Cohort Size = Initial Users × 0.95^(launch_day/30) × Exposure Rate
-          const launchCohortSize = totalCurrentDAU * Math.pow(0.95, launchDay / 30) * (exposureRate / 100);
+          // Launch Cohort Size = Initial Users × New Decay Model × Exposure Rate
+          const launchCohortSize = totalCurrentDAU * getExistingUserRetention(launchDay) * (exposureRate / 100);
           
           if (daysSinceLaunch >= 1) {
             const baseRetention = getRetentionAtDay(baseExistingUserCurve, daysSinceLaunch);

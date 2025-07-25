@@ -48,7 +48,6 @@ interface PredictionParams {
     d360Gain?: number;
     d720Gain?: number;
   };
-  baselineDecay: number;
   segments?: {
     commercial: boolean;
     consumer: boolean;
@@ -201,6 +200,7 @@ function App() {
 
   const handleSubmit = async (values: any) => {
     setLoading(true);
+    console.log('Raw form values:', values);
     try {
       const params: PredictionParams = {
         initiativeType: values.initiativeType,
@@ -219,7 +219,6 @@ function App() {
           d360Gain: (values.d360Gain || 0) / 100,
           d720Gain: (values.d720Gain || 0) / 100,
         },
-        baselineDecay: (values.baselineDecay || 0) / 100,
         segments: {
           commercial: values.commercial !== false,
           consumer: values.consumer !== false,
@@ -236,7 +235,9 @@ function App() {
         } : null,
       };
 
+      console.log('Sending params:', params);
       const response = await axios.post('/api/predict', params);
+      console.log('Received response:', response.data);
       setResult(response.data);
     } catch (error) {
       message.error('Failed to calculate prediction');
@@ -245,14 +246,8 @@ function App() {
     }
   };
 
-  const getMonthlyData = (dailyData: number[]) => {
-    const monthlyData = [];
-    for (let month = 0; month < 12; month++) {
-      const startDay = month * 30;
-      const endDay = Math.min(startDay + 30, dailyData.length);
-      const monthlyAvg = dailyData.slice(startDay, endDay).reduce((sum, val) => sum + val, 0) / (endDay - startDay);
-      monthlyData.push(monthlyAvg);
-    }
+  const getMonthlyData = (monthlyData: number[]) => {
+    // Backend already returns monthly data, no conversion needed
     return monthlyData;
   };
 
@@ -421,10 +416,9 @@ function App() {
                 initialValues={{
                   initiativeType: 'acquisition',
                   targetUsers: 'new',
-                  baselineDecay: 0.01,
-                  weeklyInstalls: 0,
+                  weeklyInstalls: 100000,
                   weeksToStart: 0,
-                  duration: 1,
+                  duration: 4,
                   d1Gain: 0,
                   d7Gain: 0,
                   d14Gain: 0,
@@ -459,16 +453,32 @@ function App() {
                         {(type === 'acquisition' || type === 'combined') && (
                           <Card size="small" title="Acquisition Parameters" style={{ marginBottom: 16 }}>
                             <Form.Item name="weeklyInstalls" label="Expected Weekly Installations">
-                              <InputNumber style={{ width: '100%' }} min={0} />
+                              <InputNumber 
+                                style={{ width: '100%' }} 
+                                min={0} 
+                                defaultValue={100000}
+                                onChange={(value) => form.setFieldValue('weeklyInstalls', value)}
+                              />
                             </Form.Item>
                             <Form.Item name="weeksToStart" label="Lead Time (weeks)">
-                              <InputNumber style={{ width: '100%' }} min={0} />
+                              <InputNumber 
+                                style={{ width: '100%' }} 
+                                min={0} 
+                                defaultValue={0}
+                                onChange={(value) => form.setFieldValue('weeksToStart', value)}
+                              />
                               <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
                                 Time before campaign launches and extra installations begin
                               </div>
                             </Form.Item>
                             <Form.Item name="duration" label="Campaign Duration (weeks)">
-                              <InputNumber style={{ width: '100%' }} min={1} />
+                              <InputNumber 
+                                style={{ width: '100%' }} 
+                                min={1} 
+                                defaultValue={4}
+                                placeholder="Enter duration in weeks"
+                                onChange={(value) => form.setFieldValue('duration', value)}
+                              />
                               <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
                                 How long the extra installations will continue
                               </div>
@@ -565,11 +575,6 @@ function App() {
                   </Panel>
                 </Collapse>
 
-                <Card size="small" title="Baseline Parameters" style={{ marginBottom: 16 }}>
-                  <Form.Item name="baselineDecay" label="Daily DAU Decay Rate (%)">
-                    <InputNumber style={{ width: '100%' }} min={0} max={1} step={0.001} />
-                  </Form.Item>
-                </Card>
 
                 <Form.Item>
                   <Button type="primary" htmlType="submit" loading={loading} size="large">
@@ -964,16 +969,25 @@ function App() {
                   <Card title="Key Assumptions">
                     <Row gutter={16}>
                       <Col xs={24} sm={8}>
-                        <Text type="secondary">Daily Churn Rate:</Text>
-                        <div className="technical-number">0.17% (5% monthly)</div>
+                        <Text type="secondary">Existing User Retention:</Text>
+                        <div className="technical-number">1 - 0.0217×e^(-0.0131×t)</div>
+                        <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
+                          ~98% retention by day 7
+                        </div>
                       </Col>
                       <Col xs={24} sm={8}>
                         <Text type="secondary">New User Model:</Text>
                         <div className="technical-number">Power Curve: retention(t) = a × t^(-b)</div>
+                        <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
+                          Fitted from retention data
+                        </div>
                       </Col>
                       <Col xs={24} sm={8}>
-                        <Text type="secondary">Existing User Model:</Text>
-                        <div className="technical-number">Exponential: retention(t) = c + a × e^(-λt)</div>
+                        <Text type="secondary">Cohort Analysis:</Text>
+                        <div className="technical-number">Daily cohorts with independent retention</div>
+                        <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
+                          276K daily new users baseline
+                        </div>
                       </Col>
                     </Row>
                   </Card>

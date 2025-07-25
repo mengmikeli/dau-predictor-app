@@ -58,7 +58,7 @@ function fitPowerCurve(retentionData) {
     denominator += (logX - meanLogX) ** 2;
   }
   
-  const b = -numerator / denominator; // Negative because retention = a * t^(-b)
+  const b = numerator / denominator; // Power law: retention = a * t^(-b), regression gives -b as slope
   const logA = meanLogY + b * meanLogX;
   const a = Math.exp(logA);
   
@@ -91,12 +91,9 @@ function calculateCohortDAU(weeklyAcquisitions, weekNumber, powerCurve, retentio
       // New users in the current week (assume 50% are active on average)
       totalDAU += weeklyAcquisitions * 0.5;
     } else {
-      // Apply retention curve with multiplier
-      const adjustedCurve = {
-        a: powerCurve.a,
-        b: powerCurve.b / retentionMultiplier
-      };
-      const retention = getRetention(cohortAge, adjustedCurve);
+      // Apply retention curve and then multiply retention value
+      const baseRetention = getRetention(cohortAge, powerCurve);
+      const retention = Math.min(1, baseRetention * retentionMultiplier);
       totalDAU += weeklyAcquisitions * retention;
     }
   }
