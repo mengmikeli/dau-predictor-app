@@ -236,7 +236,7 @@ function App() {
         } : null,
       };
 
-      const response = await axios.post('http://localhost:8000/api/predict', params);
+      const response = await axios.post('/api/predict', params);
       setResult(response.data);
     } catch (error) {
       message.error('Failed to calculate prediction');

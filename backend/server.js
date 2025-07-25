@@ -234,16 +234,16 @@ function calculateDAUimpact(params) {
     }
   };
   
-  // Daily retention rate for existing users (5% monthly churn = 95% retention)
-  const dailyRetentionRate = Math.pow(0.95, 1/30);
-  
-  // Calculate daily DAU for 365 days
-  for (let day = 0; day < 365; day++) {
-    // === BASELINE DAU ===
-    // Existing users baseline with simple decay
-    const existingUserBaselineDAU = totalCurrentDAU * Math.pow(dailyRetentionRate, day);
+  // Calculate monthly snapshots at day 15 of each month (months 1-12)
+  for (let month = 1; month <= 12; month++) {
+    // Calculate day: Day 15 of month = (month - 1) * 30 + 15
+    const day = (month - 1) * 30 + 15;
     
-    // New users baseline from all cohorts acquired up to this day
+    // === BASELINE DAU ===
+    // A. Existing User Baseline: Initial Existing Users × 0.95^(t/30)
+    const existingUserBaselineDAU = totalCurrentDAU * Math.pow(0.95, day / 30);
+    
+    // B. New User Baseline: Σ[c=0 to t] Daily Acquisition × Retention(t - c)
     let newUserBaselineDAU = 0;
     for (let cohortDay = 0; cohortDay < day; cohortDay++) {
       const cohortAge = day - cohortDay;
@@ -260,31 +260,34 @@ function calculateDAUimpact(params) {
     
     // Retention experiment impact
     if (initiativeType === 'retention' || initiativeType === 'combined') {
-      const experimentStartDay = retention.monthsToStart * 30;
+      const launchDay = retention.monthsToStart * 30;
       
-      if (day >= experimentStartDay) {
-        const daysSinceExperiment = day - experimentStartDay;
+      // Check if feature is live
+      if (day >= launchDay) {
+        const daysSinceLaunch = day - launchDay;
         
-        // Existing users impact
+        // A. Existing User Incremental DAU
+        // Formula: Launch Cohort Size × (Improved Retention(days since launch) - Base Retention(days since launch))
         if (retention.targetUsers === 'existing' || retention.targetUsers === 'all') {
-          const experimentExistingUsers = totalCurrentDAU * Math.pow(dailyRetentionRate, experimentStartDay);
-          const exposedExistingUsers = experimentExistingUsers * (exposureRate / 100);
+          // Launch Cohort Size = Initial Users × 0.95^(launch_day/30) × Exposure Rate
+          const launchCohortSize = totalCurrentDAU * Math.pow(0.95, launchDay / 30) * (exposureRate / 100);
           
-          if (daysSinceExperiment >= 1) {
-            const baseRetention = getRetentionAtDay(baseExistingUserCurve, daysSinceExperiment);
-            const improvedRetention = getRetentionAtDay(improvedExistingUserCurve, daysSinceExperiment);
+          if (daysSinceLaunch >= 1) {
+            const baseRetention = getRetentionAtDay(baseExistingUserCurve, daysSinceLaunch);
+            const improvedRetention = getRetentionAtDay(improvedExistingUserCurve, daysSinceLaunch);
             const retentionUplift = Math.max(0, improvedRetention - baseRetention);
             
-            existingUserIncrementalDAU = exposedExistingUsers * retentionUplift;
+            existingUserIncrementalDAU = launchCohortSize * retentionUplift;
           }
         }
         
-        // New users impact
+        // B. New User Incremental DAU
+        // Formula: Σ[c=launch_day to t] Exposed Daily Acquisition × (Improved Retention(t-c) - Base Retention(t-c))
         if (retention.targetUsers === 'new' || retention.targetUsers === 'all') {
           const exposedDailyAcq = dailyAcquisitions * (exposureRate / 100);
           
-          // Calculate incremental DAU from all new user cohorts acquired since experiment
-          for (let cohortDay = experimentStartDay; cohortDay < day; cohortDay++) {
+          // Sum incremental DAU from all new user cohorts acquired since launch
+          for (let cohortDay = launchDay; cohortDay < day; cohortDay++) {
             const cohortAge = day - cohortDay;
             const baseRetention = getRetentionAtDay(baseNewUserCurve, cohortAge);
             const improvedRetention = getRetentionAtDay(improvedNewUserCurve, cohortAge);
@@ -296,26 +299,39 @@ function calculateDAUimpact(params) {
       }
     }
     
-    // Acquisition campaign impact
+    // C. New Acquisition Incremental DAU
+    // Formula: Σ[c=launch_day to min(t, campaign_end)] Ramped Daily Acquisition × Retention(t-c)
     if (initiativeType === 'acquisition' || initiativeType === 'combined') {
       const campaignStartDay = acquisition.weeksToStart * 7;
       const campaignEndDay = campaignStartDay + (acquisition.duration * 7);
+      const rampWeeks = Math.min(4, acquisition.duration); // Default to 4-week ramp or campaign duration
       
       // Validate acquisition parameters
       if (acquisition.weeklyInstalls > 0 && acquisition.duration > 0) {
         // Calculate DAU from acquisition campaign cohorts
         if (day >= campaignStartDay) {
-          const dailyNewAcq = acquisition.weeklyInstalls / 7;
+          const targetDailyAcq = acquisition.weeklyInstalls / 7;
+          
+          // Debug log for timing
+          if (month <= 4) {
+            console.log(`Month ${month} (Day ${day}): Campaign active from day ${campaignStartDay} to ${campaignEndDay}`);
+          }
           
           // Calculate DAU from all campaign cohorts acquired up to this day
-          // During campaign: acquire users daily until campaign ends
+          // During campaign: acquire users daily with ramp rate until campaign ends
           // After campaign: continue calculating DAU from previously acquired cohorts
           const lastAcquisitionDay = Math.min(day, campaignEndDay - 1);
           
           for (let cohortDay = campaignStartDay; cohortDay <= lastAcquisitionDay; cohortDay++) {
             const cohortAge = day - cohortDay;
+            
+            // Apply ramp rate: min(1, (c - launch_day) / (ramp_weeks × 7))
+            const daysInCampaign = cohortDay - campaignStartDay;
+            const rampRate = Math.min(1, daysInCampaign / (rampWeeks * 7));
+            const dailyVolume = targetDailyAcq * rampRate;
+            
             const retention = getRetentionAtDay(baseNewUserCurve, cohortAge);
-            newAcquisitionDAU += dailyNewAcq * retention;
+            newAcquisitionDAU += dailyVolume * retention;
           }
         }
       }
@@ -323,6 +339,7 @@ function calculateDAUimpact(params) {
     
     const incrementalDAU = existingUserIncrementalDAU + newUserIncrementalDAU + newAcquisitionDAU;
     
+    // Store monthly snapshot results
     results.baseline.push(Math.round(baselineDAU));
     results.withInitiative.push(Math.round(baselineDAU + incrementalDAU));
     results.incrementalDAU.push(Math.round(incrementalDAU));
@@ -330,14 +347,15 @@ function calculateDAUimpact(params) {
     // Update summary stats
     if (incrementalDAU > results.summary.peakImpact) {
       results.summary.peakImpact = incrementalDAU;
-      results.summary.peakMonth = Math.floor(day / 30) + 1;
-      results.summary.peakLiftPercent = (incrementalDAU / baselineDAU) * 100;
+      results.summary.peakMonth = month;
+      results.summary.peakLiftPercent = baselineDAU > 0 ? (incrementalDAU / baselineDAU) * 100 : 0;
     }
     
-    results.summary.totalImpact += incrementalDAU;
-    results.summary.breakdown.existingUsers += existingUserIncrementalDAU;
-    results.summary.breakdown.newUsers += newUserIncrementalDAU;
-    results.summary.breakdown.newAcquisition += newAcquisitionDAU;
+    // Accumulate total impact (monthly values × 30 days for total DAU-days)
+    results.summary.totalImpact += incrementalDAU * 30;
+    results.summary.breakdown.existingUsers += existingUserIncrementalDAU * 30;
+    results.summary.breakdown.newUsers += newUserIncrementalDAU * 30;
+    results.summary.breakdown.newAcquisition += newAcquisitionDAU * 30;
   }
   
   // Round summary values
@@ -353,21 +371,26 @@ function calculateDAUimpact(params) {
 
 app.post('/api/predict', (req, res) => {
   try {
-    console.log('=== PREDICTION REQUEST RECEIVED ===');
-    console.log('Full request body:', JSON.stringify(req.body, null, 2));
-    console.log('Initiative Type:', req.body.initiativeType);
-    console.log('Acquisition Params:', JSON.stringify(req.body.acquisition, null, 2));
-    console.log('Validation Check: weeklyInstalls > 0?', req.body.acquisition.weeklyInstalls > 0);
-    console.log('Validation Check: duration > 0?', req.body.acquisition.duration > 0);
-    console.log('Will process acquisition?', req.body.acquisition.weeklyInstalls > 0 && req.body.acquisition.duration > 0);
+    // Debug logging for acquisition timing
+    if (req.body.initiativeType === 'acquisition' || req.body.initiativeType === 'combined') {
+      console.log('\n=== ACQUISITION TIMING DEBUG ===');
+      console.log('Weeks to Start:', req.body.acquisition.weeksToStart);
+      console.log('Campaign Start Day:', req.body.acquisition.weeksToStart * 7);
+      console.log('Duration:', req.body.acquisition.duration, 'weeks');
+      console.log('Campaign End Day:', (req.body.acquisition.weeksToStart + req.body.acquisition.duration) * 7);
+    }
     
     const results = calculateDAUimpact(req.body);
     
-    console.log('=== PREDICTION RESULTS ===');
-    console.log('Peak Impact:', results.summary.peakImpact);
-    console.log('Total Impact:', results.summary.totalImpact);
-    console.log('New Acquisition Breakdown:', results.summary.breakdown.newAcquisition);
-    console.log('========================');
+    // Log monthly results
+    if (req.body.initiativeType === 'acquisition' || req.body.initiativeType === 'combined') {
+      console.log('\nMonthly Incremental DAU:');
+      results.incrementalDAU.forEach((dau, idx) => {
+        console.log(`Month ${idx + 1}: ${dau}`);
+      });
+      console.log('Peak Month:', results.summary.peakMonth);
+      console.log('Peak Impact:', results.summary.peakImpact);
+    }
     
     res.json(results);
   } catch (error) {
@@ -376,84 +399,6 @@ app.post('/api/predict', (req, res) => {
   }
 });
 
-// Basic test cases for acquisition debugging
-function runAcquisitionTests() {
-  console.log('\n=== RUNNING ACQUISITION DEBUG TESTS ===\n');
-  
-  // Test 1: Simple acquisition campaign
-  const testCase1 = {
-    initiativeType: 'acquisition',
-    acquisition: {
-      weeklyInstalls: 70000, // 10K daily
-      weeksToStart: 0, // Start immediately
-      duration: 4 // 4 weeks
-    },
-    retention: {
-      targetUsers: 'new',
-      monthsToStart: 0,
-      d1Gain: 0,
-      d7Gain: 0,
-      d14Gain: 0,
-      d28Gain: 0,
-      d360Gain: 0,
-      d720Gain: 0
-    },
-    baselineDecay: 0.0017,
-    segments: { commercial: true, consumer: true },
-    platforms: { ios: true, android: true },
-    exposureRate: 100,
-    customBaseline: null
-  };
-  
-  console.log('TEST 1: Basic Acquisition Campaign');
-  console.log('Parameters:', JSON.stringify(testCase1.acquisition, null, 2));
-  
-  try {
-    const result1 = calculateDAUimpact(testCase1);
-    console.log('Peak Impact:', result1.summary.peakImpact);
-    console.log('Total Impact:', result1.summary.totalImpact);
-    console.log('New Acquisition Impact:', result1.summary.breakdown.newAcquisition);
-    console.log('Sample DAU values (first 10 days):');
-    for (let i = 0; i < 10; i++) {
-      console.log(`  Day ${i}: Baseline=${result1.baseline[i]}, WithInitiative=${result1.withInitiative[i]}, Incremental=${result1.incrementalDAU[i]}`);
-    }
-  } catch (error) {
-    console.error('TEST 1 FAILED:', error.message);
-  }
-  
-  console.log('\n--- Test 2: Check Retention Curves ---');
-  
-  // Test retention function directly
-  const baseNewUserCurve = fitPowerCurve(BASELINE_DATA.retentionCurves.new);
-  console.log('Base New User Curve:', baseNewUserCurve);
-  
-  console.log('Retention at different days:');
-  for (let day of [0, 1, 7, 14, 28, 60]) {
-    const retention = getRetentionAtDay(baseNewUserCurve, day);
-    console.log(`  Day ${day}: ${(retention * 100).toFixed(2)}%`);
-  }
-  
-  console.log('\n--- Test 3: Manual Calculation ---');
-  
-  // Manual calculation for day 1 of campaign
-  const dailyAcq = 70000 / 7; // 10K daily
-  const day0Retention = getRetentionAtDay(baseNewUserCurve, 0); // Should be 1.0
-  const day1Retention = getRetentionAtDay(baseNewUserCurve, 1); // Should be ~0.264
-  
-  console.log('Daily acquisition:', dailyAcq);
-  console.log('Day 0 retention:', day0Retention);
-  console.log('Day 1 retention:', day1Retention);
-  console.log('Expected Day 0 DAU:', dailyAcq * day0Retention);
-  console.log('Expected Day 1 DAU from D0 cohort:', dailyAcq * day1Retention);
-  
-  console.log('\n=== END ACQUISITION TESTS ===\n');
-}
-
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-  
-  // Run tests after server starts
-  setTimeout(() => {
-    runAcquisitionTests();
-  }, 100);
 });
